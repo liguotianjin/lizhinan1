@@ -1,0 +1,297 @@
+pragma solidity >=0.4.22 <0.6.0;
+
+
+contract MessageShare{
+    
+         bool public status;
+    
+         address public owner;
+    
+         string public organizationName;
+    
+         uint public numberOfPassengers;
+    
+         uint public numberOfMembers;
+    
+         mapping (address => uint) public passengerId;
+    
+         mapping (address => uint) public memberId;
+    
+         Passenger[] public passengers;
+    
+        Member[] public members;
+    
+    
+        uint32 public time1;
+    
+        uint32 public time2;
+    
+    
+        event PassengerRemoved(address PassengerAddress);
+    
+        event PassengerStatus(address Member, address Passenger, bool Isbooking);
+    
+        event MemberAdded(address MemberAddress, string MemberNotes);
+    
+        event MemberRemoved(address MemberAddress);
+    
+        event StatusChanged(string Status);
+ 
+   
+    
+    
+        struct Passenger {
+        
+                             address member;
+        
+                            address passenger;
+       
+                            bool isbooking;
+        
+                            uint takingofftime;
+        
+                            uint landingtime;
+        
+                           string notes;
+    }
+    
+    
+          struct Member {
+        
+                              address member;
+        
+                               string notes;
+        
+                              uint memberSince;
+    }
+
+    
+    
+  
+
+modifier onlyMembers {
+        
+               require(memberId[msg.sender] != 0);
+        
+               _;
+    
+  }
+
+    
+   modifier onlyOwner {
+       
+                require(msg.sender == owner);
+       
+                 _;
+  
+   }
+    
+     
+  
+
+constructor (string memory enterOrganizationName) public {
+        
+         owner = msg.sender;
+        
+         status = true;
+      
+         /*addPassenger(address(0), false, 0, 0, "");*/
+        
+        enterOrganizationName = 'TravelSky';
+        
+        organizationName = enterOrganizationName;
+        
+        numberOfPassengers = 0;
+        
+       addMember(owner, 'Creator and Owner of Smart Contract');
+        
+       numberOfMembers = 0;
+    }
+    
+     
+
+
+function changeStatus (bool deactivate) onlyOwner public {
+        
+           if (deactivate)
+        {status = false;}
+       
+         emit StatusChanged("Smart Contract Deactivated");
+    
+}
+    
+    
+
+
+function addMember(address memberAddress, string memory memberNotes) onlyOwner public {
+        
+       uint mid = memberId[memberAddress];
+        
+       if (mid == 0) {
+            
+      memberId[memberAddress] = members.length;
+            
+      mid = members.length++;
+            
+     members[mid] = Member({member: memberAddress, notes: memberNotes, memberSince: now});
+            
+     emit MemberAdded(memberAddress, memberNotes);
+            
+     numberOfMembers++;
+        
+        }
+        
+    
+}
+    
+   
+ 
+
+function removeMember(address memberAddress) onlyOwner public {
+        
+    require(memberId[memberAddress] != 0);
+        
+   for (uint i =  memberId[memberAddress]; i<members.length-1; i++){
+            
+   members[i] = members[i+1];
+       
+   }
+        
+  delete members[members.length-1];
+        
+    members.length--;
+        
+    emit MemberRemoved(memberAddress);
+        
+   numberOfMembers--;
+    } 
+    
+     
+
+
+ function addPassenger(address passengerAddress, bool passengerIsbooking, uint32 passengerTakingofftime, uint32 passengerLandingtime, string memory passengerNotes) onlyMembers public {
+        
+       uint id = passengerId[passengerAddress];
+        
+        if (id == 0) {
+            
+           passengerId[passengerAddress] = passengers.length;
+            
+           passengerIsbooking = true;
+            
+           passengerTakingofftime = 0000;
+            
+           passengerLandingtime = 1000;           
+           id = passengers.length++;
+            
+           passengers[id] = Passenger({member:msg.sender, passenger:passengerAddress, isbooking: true, takingofftime:passengerTakingofftime, landingtime:passengerLandingtime, notes:passengerNotes});
+            
+           emit PassengerStatus(msg.sender, passengerAddress, passengerIsbooking);
+            
+           numberOfPassengers++;   
+        
+           }
+        
+    
+ }
+    
+    
+
+
+function checkPassenger(address passengerAddress, uint32 timeOfTakingoff, uint32 timeOfLanding, uint32 passengerTakingofftime, uint32 passengerLandingtime, bool passengerIsbooking) onlyMembers public{
+        
+          require(passengerId[passengerAddress] != 0);
+        
+          time1 = timeOfTakingoff;
+       
+          time2 = timeOfLanding;
+       
+          if((time1 > passengerTakingofftime && time1 < passengerLandingtime) || (time2 > passengerTakingofftime && time2 < passengerLandingtime)){
+          
+          passengerIsbooking = false;  
+        
+    }
+        
+       else{
+           
+              passengerIsbooking = true;
+           
+              passengerTakingofftime = time1;
+           
+              passengerLandingtime = time2; 
+       
+         }
+        
+  emit PassengerStatus(msg.sender, passengerAddress, passengerIsbooking);
+    
+}
+
+    
+ 
+
+function removePassenger(address passengerAddress) onlyMembers public {
+        
+        require(passengerId[passengerAddress] != 0);
+        
+        for (uint i = passengerId[passengerAddress]; i<passengers.length-1; i++){
+            
+                  passengers[i] = passengers[i+1];
+       
+         }
+        
+     delete passengers[passengers.length-1]; 
+        
+     passengers.length--;
+        
+     emit PassengerRemoved(passengerAddress);
+       
+     numberOfPassengers--;
+    
+   } 
+ 
+
+}
+
+//SHA256й╣ож
+
+pragma solidity >=0.4.22 <0.6.0;
+
+
+contract Sha256Test{
+    
+    
+
+    
+             event hashResult(bytes32);
+    
+    
+             function calcSha256(uint256 input) public {
+        
+                   bytes32 id = sha256(abi.encodePacked(toAscii(input)));
+        
+                   emit hashResult(id);
+    }
+    
+    
+             function toAscii(uint256 x) private pure returns (string memory) {
+        
+                   bytes memory b = new bytes(32);
+        
+                   uint256 i;
+        
+                   for(i = 0; x > 0; i++) {
+            
+                                     b[i] = bytes1(uint8((x % 10) + 0x30));
+           
+                                     x /= 10;
+        }
+        
+                    bytes memory r = new bytes(i--);
+        
+                          for(uint j = 0; j < r.length; j++) {
+            r[j] = b[i--];
+        }
+        
+                             return string(r);
+    }
+}
