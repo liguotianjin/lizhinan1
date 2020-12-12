@@ -3,7 +3,7 @@
 REM 66666666alsdkalfjlafjafksd
 cd ..
 dir
-cd nodejs
+cd nodejs00000
 
 
  
